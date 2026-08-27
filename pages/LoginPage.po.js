@@ -6,11 +6,11 @@ export default class LoginPage {
     }
 
     get usernameField(){
-        return this.page.getByPlaceholder("Username")
+        return this.page.locator("#userName")
     }
 
     get passwordField(){
-        return this.page.getByPlaceholder("Password")
+        return this.page.locator("#password")
     }
     
     get loginButton(){

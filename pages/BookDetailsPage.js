@@ -20,6 +20,13 @@ export default class BookDetailsPage {
         return this.page.locator('#ISBN-wrapper')
     }
 
+    get bookRows(){
+        return this.page.locator('.rt-tbody .rt-tr-group')
+    }
+
+    getBookRowByTitle(title){
+        return this.bookRows.filter({hasText: title})
+    }
     
 
 }
