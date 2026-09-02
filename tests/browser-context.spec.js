@@ -28,7 +28,7 @@ test('Browser contexts are isolated', async({browser})=> {
     const page2 = await context2.newPage();
     await page2.goto('https://demoqa.com/books');
     await expect(page2).toHaveURL('https://demoqa.com/books')
-    console.log(cookies2)
+    //console.log(cookies2)
 
     await context1.close();
     await context2.close();

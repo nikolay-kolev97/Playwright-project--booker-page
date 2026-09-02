@@ -119,7 +119,7 @@ test("Create user - Generate token - Add book - Check user for current book", as
 
     // Delete book
     const deleteBookResponse = await api.deleteBook(cleanupToken, isbn, userId)
-    expect(deleteBookResponse.status()).toBe(200);
+    expect(deleteBookResponse.status()).toBe(204);
 
     // Check if the book has deleted
     const finalUserResponse = await api.getUser(userId, cleanupToken)
