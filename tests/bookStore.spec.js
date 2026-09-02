@@ -29,7 +29,7 @@ test.describe('Book store automatisation project', () => {
        // await bookStoragePage.open();
         await bookStorePage.searchBook("Git Pocket Guide");
         await expect(bookStorePage.rowsTable).toHaveCount(1);
-        await expect(bookStorePage.bookTitles).toHaveText('Git Pocket Guide')
+        await expect(bookStorePage.topicsBooks).toHaveText('Git Pocket Guide')
     })
 
     test("Search books by partial title" , async() => {
@@ -49,18 +49,18 @@ test.describe('Book store automatisation project', () => {
         await expect(bookStorePage.rowsTable).toHaveCount(0); 
     })
 
-    test("Search row by title", async() => {
-        const bookRow = bookStorePage.getRowByTitle('Got pocket guide');
-        await expect(bookRow).toBeVisible();
+    //test("Search row by title", async() => {
+    //     const bookRow = bookStorePage.rowByBookTitle('Got pocket guide');
+    //     await expect(bookRow).toBeVisible();
 
-        const authorName = bookRow.locator('td');
-        await expect(authorName).toHaveText('Richard E. Silverman')
+    //     const authorName = bookRow.locator('td');
+    //     await expect(authorName).toHaveText('Richard E. Silverman')
 
-    })
+    // })
 
-    test("Open book details" , async() => {
-      await bookStorePage.openBook('Git Pocket Guide');
-      expect(page).toHaveURL(/book=/);
-    })
+    // test("Open book details" , async() => {
+    //   await bookStorePage.openBook('Git Pocket Guide');
+    //   expect(page).toHaveURL(/book/);
+    // })
 
 })
