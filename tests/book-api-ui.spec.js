@@ -3,6 +3,7 @@ import BookStorePage from '../pages/BookStorePage';
 import BookDetailsPage from '../pages/BookDetailsPage'; 
 import LoginPage from '../pages/LoginPage.po';
 import ProfilePage from '../pages/ProfilePage';
+import BookStoreApi from '../helpers/BookStoreApi';
 
 
 test("book details should match API data", async({page, request})=> {
@@ -16,8 +17,8 @@ test("book details should match API data", async({page, request})=> {
     const bookStorePage = new BookStorePage(page);
     const bookDetailPage = new BookDetailsPage(page);
 
-    bookStorePage.open()
-    bookStorePage.openBook(book.title)
+    await bookStorePage.open()
+    await bookStorePage.openBook(book.title)
 
     await expect(bookDetailPage.bookTitle).toContainText(book.title)
     await expect(bookDetailPage.bookAuthor).toContainText(book.author)
@@ -47,33 +48,22 @@ test("Create user via API", async({request})=> {
 
 test("Create user - Generate token - Add book - Check user for current book", async({request, page})=> {
 
-   const username = `user_${Date.now()}`;
-   const password = "Test1234!a";
-   const isbn = '9781449325862';
-
-   //creaate user
-    const response = await request.post("/Account/v1/User", {
-        data: {
-            userName: username,
-            password: password
-        }
-    }  
-    )
+    const username = `user_${Date.now()}`;
+    const password = "Test1234!a";
+    const isbn = '9781449325862';
+    const api = new BookStoreApi(request);
+   
+    //creaate user
+    const response = await api.createUser(username, password)
     expect(response.status()).toBe(201);
     const responseBody = await response.json();
     //console.log(responseBody)
-
     expect(responseBody.userID).toBeTruthy()
     expect(responseBody.username).toBe(username)
     expect(responseBody.books).toHaveLength(0)
 
     //Generate token
-    const tokenResponse = await request.post("/Account/v1/GenerateToken", {
-        data: {
-            userName: username,
-            password: password
-        }
-    })
+    const tokenResponse = await api.generateToken(username, password);
 
     expect(tokenResponse.status()).toBe(200);
     const tokenBody = await tokenResponse.json();
@@ -87,11 +77,7 @@ test("Create user - Generate token - Add book - Check user for current book", as
     const userId = responseBody.userID;
     const token  = tokenBody.token;
 
-    const userResponse = await request.get(`/Account/v1/User/${userId}`, {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    })
+    const userResponse = await api.getUser(userId, token);
     expect(userResponse.status()).toBe(200);
     const userBody = await userResponse.json();
    // console.log(userBody)
@@ -101,30 +87,14 @@ test("Create user - Generate token - Add book - Check user for current book", as
 
 
     //Add boook
-    const addBookResponse = await request.post('/BookStore/v1/Books', {
-        headers: {
-            Authorization: `Bearer ${token}`
-        },
-        data: {
-            userId: userId,
-            collectionOfIsbns: [
-                {
-                    isbn: isbn
-                }
-            ]
-        }
-    })
+    const addBookResponse = await api.addBook(userId, token, isbn);
     //expect(addBookResponse.status()).toBe(201)
     const addBookBody = await addBookResponse.json();
-    const book = addBookBody.books.find(book => book.isbn = isbn)
+    const book = addBookBody.books.find(book => book.isbn === isbn)
     //console.log(addBookBody)
 
     // Get user again and check he has 1 book 
-    const updateUserResponse = await request.get(`/Account/v1/User/${userId}`, {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    })
+    const updateUserResponse = await api.getUser(userId, token)
     expect(updateUserResponse.status()).toBe(200)
     const updateUserBody = await updateUserResponse.json();
     //console.log(updateUserBody)
@@ -142,54 +112,30 @@ test("Create user - Generate token - Add book - Check user for current book", as
     await expect(profilePage.getBookRowByTitle(bookTitle)).toBeVisible();
 
     //Generate new token for delete process , because frontend has different auth flow
-    const cleanupTokenResponse = await request.post("/Account/v1/GenerateToken", {
-            data: {
-                userName: username,
-                password: password
-            }
-        })
+    const cleanupTokenResponse = await api.generateToken(username, password)
+    expect(cleanupTokenResponse.status()).toBe(200);
+    const cleanupTokenBody = await cleanupTokenResponse.json();
+    const cleanupToken = cleanupTokenBody.token
 
-        expect(cleanupTokenResponse.status()).toBe(200);
-        const cleanupTokenBody = await cleanupTokenResponse.json();
-        const cleanupToken = cleanupTokenBody.token
-
-    // Cleanup test data
-    const deleteBookResponse = await request.delete('/BookStore/v1/Book', {
-        headers: {
-            Authorization: `Bearer ${cleanupToken}`
-        },
-        data: {
-            isbn: isbn,
-            userId: userId
-        }
-    })
+    // Delete book
+    const deleteBookResponse = await api.deleteBook(cleanupToken, isbn, userId)
+    expect(deleteBookResponse.status()).toBe(200);
 
     // Check if the book has deleted
-    const finalUserResponse = await request.get(`/Account/v1/User/${userId}`, {
-        headers: {
-            Authorization: `Bearer ${cleanupToken}`
-        }
-    })
+    const finalUserResponse = await api.getUser(userId, cleanupToken)
     expect(finalUserResponse.status()).toBe(200);
     const finalUserBody = await finalUserResponse.json();
     expect(finalUserBody.books).toHaveLength(0);
 
-
     //Delete user
-    const deleteUserResponse = await request.delete(`/Account/v1/User/${userId}`, {
-        headers: {
-            Authorization: `Bearer ${cleanupToken}`
-        }
-    })
-
+    const deleteUserResponse = await api.deleteUser(userId, cleanupToken);
     expect(deleteUserResponse.status()).toBe(204);
 
     // Check if the user has deleted
-    const deletedUserResponse = await request.delete(`/Account/v1/User/${userId}`, {
-        headers: {
-            Authorization: `Bearer ${cleanupToken}`
-        }
-    })
+    const deletedUserResponse = await api.deleteUser(userId, cleanupToken);
+    expect(deletedUserResponse.status()).toBe(200);
+    const checkDeleteUser = await api.getUser(userId, cleanupToken);
+    expect(checkDeleteUser.status()).toBe(401);
 })
 
 
