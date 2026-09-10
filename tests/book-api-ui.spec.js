@@ -1,4 +1,4 @@
-import {test, expect} from '@playwright/test'
+import {test, expect} from '../fixtures/testFixtures';
 import BookStorePage from '../pages/BookStorePage';
 import BookDetailsPage from '../pages/BookDetailsPage'; 
 import LoginPage from '../pages/LoginPage.po';
@@ -46,55 +46,22 @@ test("Create user via API", async({request})=> {
     expect(responseBody.books).toHaveLength(0)
 })
 
-test("Create user - Generate token - Add book - Check user for current book", async({request, page})=> {
+test("Create user - Generate token - Add book - Check user for current book", 
+    async({request, page, testUser})=> {
 
-    const username = `user_${Date.now()}`;
-    const password = "Test1234!a";
+   
     const isbn = '9781449325862';
     const api = new BookStoreApi(request);
    
-    //creaate user
-    const response = await api.createUser(username, password)
-    expect(response.status()).toBe(201);
-    const responseBody = await response.json();
-    //console.log(responseBody)
-    expect(responseBody.userID).toBeTruthy()
-    expect(responseBody.username).toBe(username)
-    expect(responseBody.books).toHaveLength(0)
-
-    //Generate token
-    const tokenResponse = await api.generateToken(username, password);
-
-    expect(tokenResponse.status()).toBe(200);
-    const tokenBody = await tokenResponse.json();
-    //console.log(tokenBody)
-    expect(tokenBody.token).toBeTruthy();
-    expect(tokenBody.expires).toBeTruthy();
-    expect(tokenBody.status).toBe("Success")
-    expect(tokenBody.result).toBe("User authorized successfully.")
-
-    //Authorization Bearer token
-    const userId = responseBody.userID;
-    const token  = tokenBody.token;
-
-    const userResponse = await api.getUser(userId, token);
-    expect(userResponse.status()).toBe(200);
-    const userBody = await userResponse.json();
-   // console.log(userBody)
-    expect(userBody.userId).toBeTruthy();
-    expect(userBody.username).toBe(username);
-    expect(userBody.books).toHaveLength(0);
-
-
     //Add boook
-    const addBookResponse = await api.addBook(userId, token, isbn);
+    const addBookResponse = await api.addBook(testUser.userId, testUser.token, isbn);
     //expect(addBookResponse.status()).toBe(201)
     const addBookBody = await addBookResponse.json();
     const book = addBookBody.books.find(book => book.isbn === isbn)
     //console.log(addBookBody)
 
     // Get user again and check he has 1 book 
-    const updateUserResponse = await api.getUser(userId, token)
+    const updateUserResponse = await api.getUser(testUser.userId, testUser.token)
     expect(updateUserResponse.status()).toBe(200)
     const updateUserBody = await updateUserResponse.json();
     //console.log(updateUserBody)
@@ -104,7 +71,7 @@ test("Create user - Generate token - Add book - Check user for current book", as
     // UI test
     const loginPage = new LoginPage(page)
     await page.goto('/login');
-    await loginPage.login(username, password)
+    await loginPage.login(testUser.username, testUser.password)
     await expect(page).toHaveURL(/profile/)
     
     const profilePage = new ProfilePage(page)
@@ -112,30 +79,21 @@ test("Create user - Generate token - Add book - Check user for current book", as
     await expect(profilePage.getBookRowByTitle(bookTitle)).toBeVisible();
 
     //Generate new token for delete process , because frontend has different auth flow
-    const cleanupTokenResponse = await api.generateToken(username, password)
+    const cleanupTokenResponse = await api.generateToken(testUser.username, testUser.password)
     expect(cleanupTokenResponse.status()).toBe(200);
     const cleanupTokenBody = await cleanupTokenResponse.json();
     const cleanupToken = cleanupTokenBody.token
 
     // Delete book
-    const deleteBookResponse = await api.deleteBook(cleanupToken, isbn, userId)
+    const deleteBookResponse = await api.deleteBook(cleanupToken, isbn, testUser.userId)
     expect(deleteBookResponse.status()).toBe(204);
 
     // Check if the book has deleted
-    const finalUserResponse = await api.getUser(userId, cleanupToken)
+    const finalUserResponse = await api.getUser(testUser.userId, cleanupToken)
     expect(finalUserResponse.status()).toBe(200);
     const finalUserBody = await finalUserResponse.json();
     expect(finalUserBody.books).toHaveLength(0);
 
-    //Delete user
-    const deleteUserResponse = await api.deleteUser(userId, cleanupToken);
-    expect(deleteUserResponse.status()).toBe(204);
-
-    // Check if the user has deleted
-    const deletedUserResponse = await api.deleteUser(userId, cleanupToken);
-    expect(deletedUserResponse.status()).toBe(200);
-    const checkDeleteUser = await api.getUser(userId, cleanupToken);
-    expect(checkDeleteUser.status()).toBe(401);
 })
 
 
