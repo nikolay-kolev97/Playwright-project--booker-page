@@ -27,11 +27,6 @@ jobs:
       - name: install playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Check environment variables
-        run: |
-          echo "Username exists: ${{ secrets.E2E_USERNAME != '' }}"
-          echo "Password exists: ${{ secrets.E2E_PASSWORD != '' }}"
-
       - name: run playwright tests
         run: npm test
         env:
