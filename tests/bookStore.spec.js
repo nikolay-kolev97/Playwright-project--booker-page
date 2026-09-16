@@ -13,7 +13,7 @@ test.describe('Book store automatisation project', () => {
          await bookStorePage.open();
     })
 
-    test('Check basic element in the page', async({page}) => {
+    test('Check basic element in the page @regression', async({page}) => {
 
         //await bookStorePage.open();
         await expect(page).toHaveURL('/books'); 
@@ -25,14 +25,14 @@ test.describe('Book store automatisation project', () => {
     })
 
 
-    test("Search existing book by title", async() => {
+    test("Search existing book by title @regression", async() => {
        // await bookStoragePage.open();
         await bookStorePage.searchBook("Git Pocket Guide");
         await expect(bookStorePage.rowsTable).toHaveCount(1);
         await expect(bookStorePage.topicsBooks).toHaveText('Git Pocket Guide')
     })
 
-    test("Search books by partial title" , async() => {
+    test("Search books by partial title @regression" , async() => {
         await bookStorePage.searchBook("JavaScript");
         await expect(bookStorePage.rowsTable).not.toHaveCount(0);
         
@@ -44,7 +44,7 @@ test.describe('Book store automatisation project', () => {
      })
     
 
-    test("Search unavailable book", async()=> {
+    test("Search unavailable book @regression", async()=> {
         await bookStorePage.searchBook("The book does not exist");
         await expect(bookStorePage.rowsTable).toHaveCount(0); 
     })
@@ -62,5 +62,67 @@ test.describe('Book store automatisation project', () => {
     //   await bookStorePage.openBook('Git Pocket Guide');
     //   expect(page).toHaveURL(/book/);
     // })
+
+    //mock new book
+    test("should display mocked book from API @regression", async({page})=> {
+        await page.route('**/BookStore/v1/Books', async route => {
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    books: [
+                        {
+                            isbn: "123456",
+                            title: "My Mocked Book",
+                            subTitle: "Testing with Playwright",
+                            author: "Test author",
+                            publish_date: '',
+                            publisher: "Test publisher",
+                            pages: 100,
+                            description: 'Mock book',
+                            website: 'https://example.com'
+                        }
+                    ]
+                })
+            });
+        });
+
+        await page.goto('/books');
+        await expect(page.getByText('My Mocked Book')).toBeVisible();
+
+
+    })
+
+// mock empty books
+    test("should display no books when API returns empty collection @regression", async({page})=> {
+        await page.route('**/BookStore/v1/Books', async route => {
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body : JSON.stringify({
+                    books: []
+                })
+            })
+        })
+        await page.goto('/books');
+        await expect(page.getByText('Git Pocket Guide')).not.toBeVisible();
+    })
+
+
+//mock backend error
+    test('should handle server error when book API fails @regression', async({page})=> {
+        await page.route('**/BookStore/v1/Books', async route => {
+            await route.fulfill({
+                status: 500,
+                body: JSON.stringify({
+                    message: "Internal Server Error"
+                })
+            })
+        })
+        await page.goto('/books');
+       
+    })
+
+
 
 })

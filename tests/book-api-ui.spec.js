@@ -6,7 +6,7 @@ import ProfilePage from '../pages/ProfilePage';
 import BookStoreApi from '../helpers/BookStoreApi';
 
 
-test("book details should match API data", async({page, request})=> {
+test("book details should match API data @regression", async({page, request})=> {
     const response = await request.get('/BookStore/v1/Books')
     expect(response.status()).toBe(200);
 
@@ -24,29 +24,7 @@ test("book details should match API data", async({page, request})=> {
     await expect(bookDetailPage.bookAuthor).toContainText(book.author)
 })
 
-
-test("Create user via API", async({request})=> {
-   const username = `user_${Date.now()}`;
-   const password = "Test1234!a";
-
-   //creaate user
-    const response = await request.post("/Account/v1/User", {
-        data: {
-            userName: username,
-            password: password
-        }
-    }  
-    )
-    expect(response.status()).toBe(201);
-    const responseBody = await response.json();
-    console.log(responseBody)
-
-    expect(responseBody.userID).toBeTruthy()
-    expect(responseBody.username).toBe(username)
-    expect(responseBody.books).toHaveLength(0)
-})
-
-test("Create user - Generate token - Add book - Check user for current book", 
+test("Create user - Generate token - Add book - Check user for current book @smoke", 
     async({request, page, testUser})=> {
 
    

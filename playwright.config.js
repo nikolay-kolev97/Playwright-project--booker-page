@@ -39,14 +39,21 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: '**/authenticated/**',
       use: { ...devices['Desktop Chrome'] },
     },
     {
       name: 'authenticated-chromium',
+      testMatch: '**/authenticated/**',
       use: {
         ...devices['Desktop Chrome'],
         storageState: 'playwright/.auth/user.json'
       },
+      dependencies: ['setup']
+    },
+    {
+      name: 'setup',
+      testMatch: /.*\.setup\.js/
     }
 
     // {
