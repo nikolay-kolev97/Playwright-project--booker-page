@@ -30,8 +30,8 @@ jobs:
       - name: run playwright tests
         run: npm test
         env:
-          E2E_USERNAME: $({secrets.E2E_USERNAME})
-          E2E_PASSWORD: $({secrets.E2E_PASSWORD})
+          E2E_USERNAME: ${{secrets.E2E_USERNAME})
+          E2E_PASSWORD: ${{secrets.E2E_PASSWORD})
 
       - name: Upload playwright report
         if: ${{ !cancelled() }}
