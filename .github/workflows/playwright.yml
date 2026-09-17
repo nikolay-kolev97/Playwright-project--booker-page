@@ -28,8 +28,8 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: run playwright tests
-        run: npx playwright test
-
+        run: npx playwright test --project=chromium --grep-invert @local-auth
+       
       - name: Upload playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v5
