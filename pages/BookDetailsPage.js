@@ -19,7 +19,4 @@ export default class BookDetailsPage {
     get bookIsbn(){
         return this.page.locator('#ISBN-wrapper')
     }
-
-   
-
 }
