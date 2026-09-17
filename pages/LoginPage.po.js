@@ -17,7 +17,7 @@ export default class LoginPage {
         return this. page.getByRole('button', {name: "Login"})
     }
 
-    get errorMessageInvalidLogin(){
+    get invalidLoginError(){
         return this.page.locator('#output #name')
     }
 

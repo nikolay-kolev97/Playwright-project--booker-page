@@ -6,7 +6,6 @@ export default class BookStorePage {
     }
 
     get searchBox(){
-        //return this.page.locator('.searchBox');
         return this.page.getByPlaceholder('Type to search');
     }
 
@@ -29,10 +28,6 @@ export default class BookStorePage {
     get topicsBooks(){
         return this.rowsTable.locator('a');
     }
-
-    get rowAuthor(){
-        return this.rowsTable.locator('author')
-    }
     
     async open(){
         await this.page.goto('/books');
@@ -42,7 +37,7 @@ export default class BookStorePage {
         await this.searchBox.fill(bookName)
     }
 
-    async  rowByBookTitle(title){
+    rowByBookTitle(title){
        return this.topicsBooks.filter({ has : this.page.getByRole('link', {name: title , exact: true})})
     }
 

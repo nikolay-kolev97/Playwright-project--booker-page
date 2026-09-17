@@ -13,21 +13,13 @@ test.describe("Login scenario", ()=> {
     test("Should not login with invalid credentials @regression", async({page})=> {
         await loginPage.login("invalidUser", "invalidPassword")
         await expect(page).toHaveURL(/login/);
-        await expect(loginPage.errorMessageInvalidLogin).toHaveText("Invalid username or password!");
+        await expect(loginPage.invalidLoginError).toHaveText("Invalid username or password!");
     })
 
 //Create new local user from API only for automation tests
     test("Correct login in profile @smoke @local-auth", async({page})=> {
         await loginPage.login(process.env.E2E_USERNAME, process.env.E2E_PASSWORD)
-
-        const errorMessage = await loginPage.errorMessageInvalidLogin
-        .textContent({ timeout: 2000 })
-        .catch(() => null);
-        console.log('Login error:', errorMessage);
-
         await expect(page).toHaveURL(/profile/)
     })
-
-
 
 })

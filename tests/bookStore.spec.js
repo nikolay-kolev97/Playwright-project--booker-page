@@ -14,8 +14,6 @@ test.describe('Book store automatisation project', () => {
     })
 
     test('Check basic element in the page @regression', async({page}) => {
-
-        //await bookStorePage.open();
         await expect(page).toHaveURL('/books'); 
         await expect(bookStorePage.searchBox).toBeVisible();
         await expect(bookStorePage.loginButton).toBeVisible();
@@ -26,7 +24,6 @@ test.describe('Book store automatisation project', () => {
 
 
     test("Search existing book by title @regression", async() => {
-       // await bookStoragePage.open();
         await bookStorePage.searchBook("Git Pocket Guide");
         await expect(bookStorePage.rowsTable).toHaveCount(1);
         await expect(bookStorePage.topicsBooks).toHaveText('Git Pocket Guide')
@@ -49,19 +46,6 @@ test.describe('Book store automatisation project', () => {
         await expect(bookStorePage.rowsTable).toHaveCount(0); 
     })
 
-    //test("Search row by title", async() => {
-    //     const bookRow = bookStorePage.rowByBookTitle('Got pocket guide');
-    //     await expect(bookRow).toBeVisible();
-
-    //     const authorName = bookRow.locator('td');
-    //     await expect(authorName).toHaveText('Richard E. Silverman')
-
-    // })
-
-    // test("Open book details" , async() => {
-    //   await bookStorePage.openBook('Git Pocket Guide');
-    //   expect(page).toHaveURL(/book/);
-    // })
 
     //mock new book
     test("should display mocked book from API @regression", async({page})=> {

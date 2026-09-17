@@ -33,16 +33,12 @@ test("Create user - Generate token - Add book - Check user for current book @smo
    
     //Add boook
     const addBookResponse = await api.addBook(testUser.userId, testUser.token, isbn);
-    //expect(addBookResponse.status()).toBe(201)
-    const addBookBody = await addBookResponse.json();
-    const book = addBookBody.books.find(book => book.isbn === isbn)
-    //console.log(addBookBody)
+    expect(addBookResponse.status()).toBe(201);
 
     // Get user again and check he has 1 book 
     const updateUserResponse = await api.getUser(testUser.userId, testUser.token)
     expect(updateUserResponse.status()).toBe(200)
     const updateUserBody = await updateUserResponse.json();
-    //console.log(updateUserBody)
     expect(updateUserBody.books).toHaveLength(1)
     expect(updateUserBody.books[0].isbn).toBe(isbn)
 
