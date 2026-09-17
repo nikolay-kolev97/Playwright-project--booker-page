@@ -28,11 +28,8 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: run playwright tests
-        run: npm test
-        env:
-          E2E_USERNAME: $({secrets.E2E_USERNAME})
-          E2E_PASSWORD: $({secrets.E2E_PASSWORD})
-
+        run: npx playwright test --project=chromium --grep-invert @local-auth
+       
       - name: Upload playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v5

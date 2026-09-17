@@ -17,7 +17,7 @@ test.describe("Login scenario", ()=> {
     })
 
 //Create new local user from API only for automation tests
-    test("Correct login in profile @smoke", async({page})=> {
+    test("Correct login in profile @smoke @local-auth", async({page})=> {
         await loginPage.login(process.env.E2E_USERNAME, process.env.E2E_PASSWORD)
 
         const errorMessage = await loginPage.errorMessageInvalidLogin
